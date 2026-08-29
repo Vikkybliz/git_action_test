@@ -33,11 +33,11 @@ jobs:
 
       - name: Boot iOS --simulator
         run: |
-          DEVICE_UID = "6F69910C-E4FA-488A-B9C2-41B770484810"
+          DEVICE_UDID = "6F69910C-E4FA-488A-B9C2-41B770484810"
           echo "Using simulator: $DEVICE_UID"
-          echo "DEVICE_UID=$DEVICE_UID" >> "$GITHUB_ENV"
-          xcrun simctl boot "$DEVICE_UID" || true
-          xcrun simctl bookstatus "$DEVICE_UID" -b
+          echo "DEVICE_UDID=$DEVICE_UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$DEVICE_UDID" || true
+          xcrun simctl bookstatus "$DEVICE_UDID" -b
 
       - name: Find app bundle identifier   
         run: |

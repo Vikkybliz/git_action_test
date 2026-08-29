@@ -52,3 +52,36 @@ jobs:
 
           echo "Bundle ID: $BUNDLE_ID"
           echo "BUNDLE_ID=$BUNDLE_ID" >> "$GITHUB_ENV"
+
+      - name: Install app
+        run: |
+          echo "Installing app on simulator"
+
+          xcrun simctl install \
+          "$DEVICE_UDID" \
+          build/ios/iphonesimulator/Runner.app
+
+      - name: Launch app
+        run: |
+          echo "Launching app $BUNDLE_ID"
+
+          xcrun simctl launch \
+          "$DEVICE_UDID" \
+          "BUNDLE_ID"
+          sleep 5
+
+      - name: Take screenshoot
+        run: |
+          mkdir -p screenshots
+          echo " Taking screenshots"
+          xcrun simctl io \
+          "$DEVICE_UDID" \
+          screenshoot \
+          screenshots/home.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-screenshots
+          path: screenshots/
+

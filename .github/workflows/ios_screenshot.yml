@@ -76,7 +76,7 @@ jobs:
           echo " Taking screenshots"
           xcrun simctl io \
           "$DEVICE_UDID" \
-          screenshoot \
+          screenshot \
           screenshots/home.png
 
       - name: Upload screenshots

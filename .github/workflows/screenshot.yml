@@ -20,3 +20,21 @@ jobs:
         run: flutter build ios --simulator --debug
       - name: List available simulators 
         run: xcrun simctl list devices available
+      - name: Boot iOS Simulator 
+        run: |
+          DEVICE_NAME="iPhone 17 Pro Max"
+          DEVICE_UDID=$(xcrun simctl list devices available \ | grep "$DEVICE_NAME" \ | head -1 \ | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          echo "Using simulator: $DEVICE_UDID"
+          xcrun simctl boot "$DEVICE_UDID" || true
+          xcrun simctl bootstatus "$DEVICE_UDID" -b
+      - name: Install and launch app on simulator
+        run: |
+          xcrun simctl install \ "$DEVICE_UDID" \ build/ios/iphonesimulator/Runner.app
+          xcrun simctl launch "$DEVICE_UDID" com.example.myapp
+          mkdir -p screenshots
+          xcrun simctl io "$DEVICE_UDID" \ screenshot screenshots/home.png
+      - name: Upload screenshots 
+        uses: actions/upload-artifact@v4 
+        with: 
+          name: ios-screenshots 
+          path: screenshots/

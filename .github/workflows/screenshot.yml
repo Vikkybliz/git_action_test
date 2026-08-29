@@ -1,40 +1,91 @@
 name: iOS Screenshots
-"on":
+
+on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+
   workflow_dispatch:
+
 jobs:
   screenshots:
     runs-on: macos-latest
+
     steps:
+      # 1. Download the repository
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Flutter 
-        uses: subosito/flutter-action@v2 
-        with: 
+
+      # 2. Install Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
           channel: stable
           cache: true
-      - name: Install dependencies 
+
+      # 3. Install Flutter dependencies
+      - name: Install dependencies
         run: flutter pub get
-      - name: Build iOS app 
+
+      # 4. Build the Flutter app for the iOS Simulator
+      - name: Build iOS app
         run: flutter build ios --simulator --debug
-      - name: List available simulators 
+
+      # 5. Show the simulators available on the GitHub runner
+      - name: List available simulators
         run: xcrun simctl list devices available
-      - name: Boot iOS Simulator 
+
+      # 6. Boot the simulator
+      - name: Boot iOS Simulator
         run: |
-          DEVICE_NAME="iPhone 17 Pro"
-          DEVICE_UDID=$(xcrun simctl list devices available | grep "$DEVICE_NAME" | head -1 \ | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          # iPhone 17 Pro running on iOS 26.5
+          DEVICE_UDID="6EE862FE-93F2-4D55-946E-8745EE2B3A88"
+
           echo "Using simulator: $DEVICE_UDID"
+
+          # Make DEVICE_UDID available to later steps
+          echo "DEVICE_UDID=$DEVICE_UDID" >> "$GITHUB_ENV"
+
+          # Boot the simulator
           xcrun simctl boot "$DEVICE_UDID" || true
+
+          # Wait until the simulator has completely booted
           xcrun simctl bootstatus "$DEVICE_UDID" -b
-      - name: Install and launch app on simulator
+
+      # 7. Install and launch the Flutter app
+      - name: Install and launch app
         run: |
-          xcrun simctl install \ "$DEVICE_UDID" \ build/ios/iphonesimulator/Runner.app
-          xcrun simctl launch "$DEVICE_UDID" com.example.myapp
+          echo "Installing app on simulator..."
+
+          xcrun simctl install \
+            "$DEVICE_UDID" \
+            build/ios/iphonesimulator/Runner.app
+
+          echo "Launching app..."
+
+          xcrun simctl launch \
+            "$DEVICE_UDID" \
+            com.example.git_action_test
+
+          # Give the app a few seconds to render
+          sleep 5
+
+      # 8. Take a screenshot
+      - name: Take screenshot
+        run: |
           mkdir -p screenshots
-          xcrun simctl io "$DEVICE_UDID" \ screenshot screenshots/home.png
-      - name: Upload screenshots 
-        uses: actions/upload-artifact@v4 
-        with: 
-          name: ios-screenshots 
+
+          echo "Taking screenshot..."
+
+          xcrun simctl io \
+            "$DEVICE_UDID" \
+            screenshot \
+            screenshots/home.png
+
+      # 9. Upload the screenshot as a GitHub Actions artifact
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-screenshots
           path: screenshots/

@@ -22,7 +22,7 @@ jobs:
         run: xcrun simctl list devices available
       - name: Boot iOS Simulator 
         run: |
-          DEVICE_NAME="iPhone 17 Pro Max"
+          DEVICE_NAME="iPhone 17 Pro"
           DEVICE_UDID=$(xcrun simctl list devices available \ | grep "$DEVICE_NAME" \ | head -1 \ | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
           echo "Using simulator: $DEVICE_UDID"
           xcrun simctl boot "$DEVICE_UDID" || true

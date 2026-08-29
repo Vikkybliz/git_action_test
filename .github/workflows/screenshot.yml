@@ -58,19 +58,27 @@ jobs:
         run: |
           echo "Installing app on simulator..."
 
+          APP_PATH="build/ios/iphonesimulator/Runner.app"
+
           xcrun simctl install \
-            "$DEVICE_UDID" \
-            build/ios/iphonesimulator/Runner.app
+          "$DEVICE_UDID" \
+          "$APP_PATH"
+
+          BUNDLE_ID=$(
+          /usr/libexec/PlistBuddy \
+          -c "Print:CFBundleIdentifier" \
+          "$APP_PATH/Info.plist"
+          )
+
+          echo "Bundle ID: $BUNDLE_ID"
 
           echo "Launching app..."
 
           xcrun simctl launch \
-            "$DEVICE_UDID" \
-            com.example.git_action_test
+          "$DEVICE_UDID" \
+          "$BUNDLE_ID"
 
-          # Give the app a few seconds to render
           sleep 5
-
       # 8. Take a screenshot
       - name: Take screenshot
         run: |
